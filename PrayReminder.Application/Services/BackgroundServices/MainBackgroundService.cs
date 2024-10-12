@@ -268,7 +268,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
         public async Task IntroduceCommands(Message msg)
         {
-            await _bot.SendTextMessageAsync(msg.Chat.Id, "Bot uchun buyruqlar:\n/start - boshlash\n/region - viloyatni o'zgartirish\n/commands - buyruqlar bilan tanishish",replyMarkup:new ReplyKeyboardRemove());
+            await _bot.SendTextMessageAsync(msg.Chat.Id, "start - Boshlash\r\n/region - Viloyatni tanlash\r\n/todaysprays - Bugungi kun namozlari\r\n/commands - Buyruqlar bilan tanishish\r\n/botinfo - Bot haqida ma'lumotlar", replyMarkup:new ReplyKeyboardRemove());
         }
 
         public async Task DefaultResponse(Message msg)
