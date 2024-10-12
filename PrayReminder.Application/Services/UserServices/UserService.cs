@@ -66,6 +66,53 @@ namespace PrayReminder.Application.Services.UserServices
             }
         }
 
+        public async Task<int> GetAllUsersCount()
+        {
+            try
+            {
+                List<User> users= await _applicationDbContext.Users.ToListAsync();
+                return users.Count;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+        public async Task<string> GetUserRegionByChatId(long chatId)
+        {
+            try
+            {
+                User user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.ChatId == chatId);
+
+                switch (user.Region)
+                {
+                    case Region.Andijon:
+                        return "Andijon";
+                    case Region.Buxoro:
+                        return "Buxoro";
+                    case Region.Fargona:
+                        return "Farg'ona";
+                    case Region.Jizzax:
+                        return "Jizzax";
+                    case Region.Namangan:
+                        return "Namangan";
+                    case Region.Navoiy:
+                        return "Navoiy";
+                    case Region.Samarqand:
+                        return "Samarqand";
+                    case Region.Toshkent:
+                        return "Toshkent";
+                    default:
+                        throw new Exception();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
         public async Task<IEnumerable<User>> GetUsersByRegion(Region region)
         {
             try

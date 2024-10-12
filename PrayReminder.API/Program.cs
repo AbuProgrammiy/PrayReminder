@@ -1,7 +1,5 @@
-
-using PrayReminder.Application.Services.BackgroundServices;
-using PrayReminder.Infrastructure;
 using PrayReminder.Application;
+using PrayReminder.Infrastructure;
 
 namespace PrayReminder.API
 {
@@ -15,7 +13,6 @@ namespace PrayReminder.API
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddHostedService<MainBackgroundService>();
 
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddApplication();

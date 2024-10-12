@@ -33,10 +33,9 @@ namespace PrayReminder.Application.Services.BackgroundServices
         {
             while(!stoppingToken.IsCancellationRequested)
             {
-
                 CheckPrayTime();
 
-                await Task.Delay(30000, stoppingToken);
+                await Task.Delay(60000, stoppingToken);
             }
         }
 
@@ -59,6 +58,18 @@ namespace PrayReminder.Application.Services.BackgroundServices
             else if (msg.Text == "/commands")
             {
                 IntroduceCommands(msg);
+            }
+            else if (msg.Text == "/todaysprays")
+            {
+                SendTodaysPrays(msg);
+            }
+            else if (msg.Text=="/botinfo")
+            {
+                SendBotInfo(msg);
+            }
+            else if (msg.Text.Contains(":admin"))
+            {
+                SendMessageToEveryone(msg);
             }
             else
             {
@@ -153,6 +164,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
             string baseURL = "https://islomapi.uz/api/present/day?region=";
             HttpClient client = new HttpClient();
             DateTime currentDateTime = DateTime.Now;
+            TimeOnly currentTime=TimeOnly.FromDateTime(currentDateTime);
 
             for (byte i = 0;i< regions.Count();i++)
             {
@@ -166,32 +178,31 @@ namespace PrayReminder.Application.Services.BackgroundServices
                 string shom = prayTimes["times"]["shom_iftor"].ToString();
                 string hufton = prayTimes["times"]["hufton"].ToString();
 
-                if (TimeOnly.TryParse(bomdod, out TimeOnly bomdodVaqti)==true&&bomdodVaqti==TimeOnly.FromDateTime(currentDateTime))
+                if (bomdod==currentTime.ToString("HH:mm"))
                 {
                     RemindPrayTime("Bomdod", DefineRegion(regions[i]), bomdod);
                 }
-                else if(TimeOnly.TryParse(quyosh, out TimeOnly quyoshVaqti) == true && quyoshVaqti == TimeOnly.FromDateTime(currentDateTime))
+                else if(quyosh == currentTime.ToString("HH:mm"))
                 {
                     RemindPrayTime("Quyosh", DefineRegion(regions[i]), quyosh);
                 }
-                else if (TimeOnly.TryParse(peshin, out TimeOnly peshinVaqti) == true && peshinVaqti == TimeOnly.FromDateTime(currentDateTime))
+                else if (peshin == currentTime.ToString("HH:mm"))
                 {
                     RemindPrayTime("Peshin", DefineRegion(regions[i]), peshin);
                 }
-                else if (TimeOnly.TryParse(asr, out TimeOnly asrVaqti) == true && asrVaqti == TimeOnly.FromDateTime(currentDateTime))
+                else if (asr == currentTime.ToString("HH:mm"))
                 {
                     RemindPrayTime("Asr", DefineRegion(regions[i]), asr);
                 }
-                else if (TimeOnly.TryParse(shom, out TimeOnly shomVaqti) == true && shomVaqti == TimeOnly.FromDateTime(currentDateTime))
+                else if (shom == currentTime.ToString("HH:mm"))
                 {
                     RemindPrayTime("Shom", DefineRegion(regions[i]), shom);
                 }
-                else if (TimeOnly.TryParse(hufton, out TimeOnly huftonVaqti) == true && huftonVaqti == TimeOnly.FromDateTime(currentDateTime))
+                else if (hufton == currentTime.ToString("HH:mm"))
                 {
                     RemindPrayTime("Hufton", DefineRegion(regions[i]), hufton);
                 }
             }
-
         }
 
         public Region DefineRegion(string regionName)
@@ -229,14 +240,14 @@ namespace PrayReminder.Application.Services.BackgroundServices
             {
                 foreach (User user in users)
                 {
-                    await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime}⏰\n{encorageToPray[random.Next(0, encorageToPray.Count())]}", parseMode: ParseMode.Html);
+                    await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\n{encorageToPray[random.Next(0, encorageToPray.Count())]}", parseMode: ParseMode.Html);
                 }
             }
             else
             {
                 foreach (User user in users)
                 {
-                    await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> chiqmoqda {currentTime}⏰\nQuyosh chiqayotgan payt namoz o'qilmaydi.", parseMode: ParseMode.Html);
+                    await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> chiqmoqda {currentTime} ⏰\n\nQuyosh chiqayotgan payt namoz o'qilmaydi ☀️", parseMode: ParseMode.Html);
                 }
             }
         }
@@ -249,6 +260,51 @@ namespace PrayReminder.Application.Services.BackgroundServices
         public async void DefaultResponse(Message msg)
         {
             await _bot.SendTextMessageAsync(msg.Chat.Id, "Tushunarsiz buyruq.\n /commands orqali buyruqlar bilan tanishishingiz mumkin!", replyMarkup: new ReplyKeyboardRemove());
+        }
+
+        public async void SendBotInfo(Message msg)
+        {
+            int usersCount=await _userService.GetAllUsersCount();
+            await _bot.SendTextMessageAsync(msg.Chat.Id, $"Bot egasi @Abu_Programmiy 😁\nFoydalanuvchilar soni: {usersCount}\nislomapi.uz ma'lumotlaridan foydalanilgan.");
+        }
+
+        public async void SendMessageToEveryone(Message msg)
+        {
+            IEnumerable<User> users = await _userService.GetAll();
+
+            msg.Text = msg.Text.Split(":admin")[0];
+
+            foreach (User user in users)
+            {
+                await _bot.SendTextMessageAsync(user.ChatId, msg.Text);
+            }
+
+            await _bot.SendTextMessageAsync(msg.Chat.Id, "Barchaga yuborildi ✅");
+        }
+
+        public async void SendTodaysPrays(Message msg)
+        {
+            string messageToSend;
+
+            HttpClient client=new HttpClient();
+            string dateInfo = await client.GetStringAsync("https://api.aladhan.com/v1/gToH/" + DateTime.Now.ToString("dd-MM-yyyy"));
+
+            string region=await _userService.GetUserRegionByChatId(msg.Chat.Id);
+
+            string prayTimes = await client.GetStringAsync($"https://islomapi.uz/api/present/day?region={region}");
+
+
+            JObject data=JObject.Parse(dateInfo);
+            
+            messageToSend = $"<b>Hijriy sana:</b> {data["data"]["hijri"]["date"]?.ToString()}\n\n<b>Oy</b>: {data["data"]["hijri"]["month"]["en"]}({data["data"]["hijri"]["month"]["ar"]})\n<b>Hafta kuni:</b> {data["data"]["hijri"]["weekday"]["en"]}({data["data"]["hijri"]["weekday"]["ar"]})";
+
+            data = JObject.Parse(prayTimes);
+
+            messageToSend += $"\n\n<b>Namoz vaqtlari:</b>\nBomdod: {data["times"]["tong_saharlik"]} ⏰\nQuyosh: {data["times"]["quyosh"]} ⏰\nPeshin: {data["times"]["peshin"]} ⏰\nAsr: {data["times"]["asr"]} ⏰\nShom: {data["times"]["shom_iftor"]} ⏰\nHufton: {data["times"]["hufton"]} ⏰";
+
+
+
+            await _bot.SendTextMessageAsync(msg.Chat.Id, messageToSend,parseMode:ParseMode.Html);
         }
     }
 }
