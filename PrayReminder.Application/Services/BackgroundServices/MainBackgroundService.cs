@@ -33,47 +33,61 @@ namespace PrayReminder.Application.Services.BackgroundServices
         {
             while(!stoppingToken.IsCancellationRequested)
             {
-                CheckPrayTime();
+                try
+                {
+                    CheckPrayTime();
+                }
+                catch (Exception ex)
+                {
+                    SendAlertToAdmin($"CheckPrayTimeda xatolik yuzberdi\n\n{ex.Message}\n\n{ex}\n");
+                }
 
-                await Task.Delay(60000, stoppingToken);
+                await Task.Delay(59000, stoppingToken);
             }
         }
 
         public async Task OnMessage(Message msg, UpdateType type)
         {
-            if (msg.Text is null) return;
+            try
+            {
+                if (msg.Text is null) return;
 
-            if (msg.Text == "/start")
-            {
-                RegisterUser(msg);
+                if (msg.Text == "/start")
+                {
+                    RegisterUser(msg);
+                }
+                else if (msg.Text == "/region")
+                {
+                    ChooseRegion(msg);
+                }
+                else if (regions.Contains(msg.Text))
+                {
+                    SelectRegion(msg);
+                }
+                else if (msg.Text == "/commands")
+                {
+                    IntroduceCommands(msg);
+                }
+                else if (msg.Text == "/todaysprays")
+                {
+                    SendTodaysPrays(msg);
+                }
+                else if (msg.Text=="/botinfo")
+                {
+                    SendBotInfo(msg);
+                }
+                else if (msg.Text.Contains(":admin"))
+                {
+                    SendMessageToEveryone(msg);
+                }
+                else
+                {
+                    DefaultResponse(msg);
+                }
             }
-            else if (msg.Text == "/region")
+            catch (Exception ex)
             {
-                ChooseRegion(msg);
-            }
-            else if (regions.Contains(msg.Text))
-            {
-                SelectRegion(msg);
-            }
-            else if (msg.Text == "/commands")
-            {
-                IntroduceCommands(msg);
-            }
-            else if (msg.Text == "/todaysprays")
-            {
-                SendTodaysPrays(msg);
-            }
-            else if (msg.Text=="/botinfo")
-            {
-                SendBotInfo(msg);
-            }
-            else if (msg.Text.Contains(":admin"))
-            {
-                SendMessageToEveryone(msg);
-            }
-            else
-            {
-                DefaultResponse(msg);
+                SendAlertToAdmin($"OnMessageda xatolik yuzberdi\n\n{ex.Message}\n\n{ex}\n");
             }
         }
 
@@ -303,6 +317,11 @@ namespace PrayReminder.Application.Services.BackgroundServices
             messageToSend += $"\n\n<b>Viloyat:</b> {region}\n\n<b>Namoz vaqtlari:</b>\nBomdod: {data["times"]["tong_saharlik"]} ⏰\nQuyosh: {data["times"]["quyosh"]} ⏰\nPeshin: {data["times"]["peshin"]} ⏰\nAsr: {data["times"]["asr"]} ⏰\nShom: {data["times"]["shom_iftor"]} ⏰\nHufton: {data["times"]["hufton"]} ⏰";
 
             await _bot.SendTextMessageAsync(msg.Chat.Id, messageToSend,parseMode:ParseMode.Html);
+        }
+
+        public async void SendAlertToAdmin(string alertText)
+        {
+            await _bot.SendTextMessageAsync(1268306946, $"{alertText}\nsana: {DateTime.Now}");
         }
     }
 }
