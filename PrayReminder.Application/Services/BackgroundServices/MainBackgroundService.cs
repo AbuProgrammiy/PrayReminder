@@ -254,14 +254,22 @@ namespace PrayReminder.Application.Services.BackgroundServices
             {
                 foreach (User user in users)
                 {
-                    await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\n{encorageToPray[random.Next(0, encorageToPray.Count())]}", parseMode: ParseMode.Html);
+                    try
+                    {
+                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\n{encorageToPray[random.Next(0, encorageToPray.Count())]}", parseMode: ParseMode.Html);
+                    }
+                    catch { }
                 }
             }
             else
             {
                 foreach (User user in users)
                 {
-                    await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> chiqmoqda {currentTime} ⏰\n\nQuyosh chiqayotgan payt namoz o'qilmaydi ☀️", parseMode: ParseMode.Html);
+                    try
+                    {
+                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> chiqmoqda {currentTime} ⏰\n\nQuyosh chiqayotgan payt namoz o'qilmaydi ☀️", parseMode: ParseMode.Html);
+                    }
+                    catch { }
                 }
             }
         }
@@ -290,7 +298,13 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
             foreach (User user in users)
             {
-                await _bot.SendTextMessageAsync(user.ChatId, msg.Text);
+                try
+                {
+                    await _bot.SendTextMessageAsync(user.ChatId, msg.Text);
+                }
+                catch (Exception ex)
+                {
+                }
             }
 
             await _bot.SendTextMessageAsync(msg.Chat.Id, "Barchaga yuborildi ✅");
