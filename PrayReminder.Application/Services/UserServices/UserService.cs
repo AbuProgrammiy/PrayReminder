@@ -5,6 +5,7 @@ using PrayReminder.Domain.Entities.DTOs;
 using PrayReminder.Domain.Entities.Enums;
 using PrayReminder.Domain.Entities.Models;
 using PrayReminder.Domain.Entities.Views;
+using Telegram.Bot.Requests.Abstractions;
 
 namespace PrayReminder.Application.Services.UserServices
 {
@@ -41,6 +42,44 @@ namespace PrayReminder.Application.Services.UserServices
                     IsSuccess = true,
                     StatusCode = 200,
                     Response = "User created successfuly!"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Response = $"Something went wrong: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ResponseModel> DeleteUserById(Guid userId)
+        {
+            try
+            {
+                User user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Response = "User not found to delete!"
+                    };
+                }
+
+
+                _applicationDbContext.Users.Remove(user);
+                await _applicationDbContext.SaveChangesAsync();
+
+                return new ResponseModel
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Response = "Deleted successfuly!"
                 };
             }
             catch (Exception ex)
