@@ -93,26 +93,33 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
         public async Task RegisterUser(Message msg)
         {
-            ResponseModel responseModel = await _userService.Create(new CreateUserDTO
+            try
             {
-                ChatId = msg.Chat.Id,
-                UserName = msg.Chat.Username,
-                FirstName = msg.Chat.FirstName,
-                LastName = msg.Chat.LastName
-            });
+                ResponseModel responseModel = await _userService.Create(new CreateUserDTO
+                {
+                    ChatId = msg.Chat.Id,
+                    UserName = msg.Chat.Username,
+                    FirstName = msg.Chat.FirstName,
+                    LastName = msg.Chat.LastName
+                });
 
-            if (responseModel.StatusCode == 400)
-            {
-                await _bot.SendTextMessageAsync(msg.Chat, $"Hurmatli {msg.Chat.FirstName}aka sizni yana bir bor ko'rib turganimdan hursandman 🙂😊\nRegionni o'zgartirish uchun /region yuboring");
+                if (responseModel.StatusCode == 400)
+                {
+                    await _bot.SendTextMessageAsync(msg.Chat, $"Hurmatli {msg.Chat.FirstName}aka sizni yana bir bor ko'rib turganimdan hursandman 🙂😊\nRegionni o'zgartirish uchun /region yuboring");
+                }
+                else if (responseModel.StatusCode == 200)
+                {
+                    await _bot.SendTextMessageAsync(msg.Chat, "Assalamualeykum xush kelibsiz 🙂😊");
+                    await ChooseRegion(msg);
+                }
+                else if (responseModel.StatusCode == 500)
+                {
+                    await _bot.SendTextMessageAsync(msg.Chat, "Botimizda mummo yuz berdi, iltimos keyinroq aloqaga chiqing 🙂");
+                }
             }
-            else if (responseModel.StatusCode == 200)
+            catch
             {
-                await _bot.SendTextMessageAsync(msg.Chat, "Assalamualeykum xush kelibsiz 🙂😊");
-                await ChooseRegion(msg);
-            }
-            else if (responseModel.StatusCode == 500)
-            {
-                await _bot.SendTextMessageAsync(msg.Chat, "Botimizda mummo yuz berdi, iltimos keyinroq aloqaga chiqing 🙂");
+                await _bot.SendTextMessageAsync(msg.Chat, "Nmadir xato ketdi(\nqayta urinig!");
             }
         }
 
@@ -281,7 +288,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
         public async Task DefaultResponse(Message msg)
         {
-            await _bot.SendTextMessageAsync(msg.Chat.Id, "Tushunarsiz buyruq.\n /commands orqali buyruqlar bilan tanishishingiz mumkin!", replyMarkup: new ReplyKeyboardRemove());
+            await _bot.SendTextMessageAsync(msg.Chat, "Tushunarsiz buyruq.\n /commands orqali buyruqlar bilan tanishishingiz mumkin!", replyMarkup: new ReplyKeyboardRemove());
         }
 
         public async Task SendBotInfo(Message msg)
@@ -324,7 +331,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
             JObject data=JObject.Parse(dateInfo);
             
-            messageToSend = $"<b>Hijriy sana:</b> {data["data"]["hijri"]["date"]?.ToString()}\n\n<b>Oy</b>: {data["data"]["hijri"]["month"]["en"]}({data["data"]["hijri"]["month"]["ar"]})\n<b>Hafta kuni:</b> {data["data"]["hijri"]["weekday"]["en"]}({data["data"]["hijri"]["weekday"]["ar"]})";
+            messageToSend = $"<b>Hijriy sana:</b> {data["data"]["hijri"]["date"]?.ToString()}\n\n<b>Oy</b>: {data["data"]["hijri"]["month"]["en"]} ({data["data"]["hijri"]["month"]["ar"]})\n<b>Hafta kuni:</b> {data["data"]["hijri"]["weekday"]["en"]} ({data["data"]["hijri"]["weekday"]["ar"]})";
 
             data = JObject.Parse(prayTimes);
 
