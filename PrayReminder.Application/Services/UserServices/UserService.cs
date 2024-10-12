@@ -59,7 +59,7 @@ namespace PrayReminder.Application.Services.UserServices
         {
             try
             {
-                User user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                User? user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
                 if (user == null)
                 {
@@ -168,7 +168,7 @@ namespace PrayReminder.Application.Services.UserServices
         {
             try
             {
-                User user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.ChatId == request.ChatId);
+                User? user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.ChatId == request.ChatId);
 
                 if (user == null)
                 {

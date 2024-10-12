@@ -35,11 +35,11 @@ namespace PrayReminder.Application.Services.BackgroundServices
             {
                 try
                 {
-                    CheckPrayTime();
+                    await CheckPrayTime();
                 }
                 catch (Exception ex)
                 {
-                    SendAlertToAdmin($"CheckPrayTimeda xatolik yuzberdi\n\n{ex.Message}\n\n{ex}\n");
+                    await SendAlertToAdmin($"CheckPrayTimeda xatolik yuzberdi\n\n{ex.Message}\n\n{ex}\n");
                 }
 
                 await Task.Delay(59000, stoppingToken);
@@ -54,44 +54,44 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
                 if (msg.Text == "/start")
                 {
-                    RegisterUser(msg);
+                    await RegisterUser(msg);
                 }
                 else if (msg.Text == "/region")
                 {
-                    ChooseRegion(msg);
+                    await ChooseRegion(msg);
                 }
                 else if (regions.Contains(msg.Text))
                 {
-                    SelectRegion(msg);
+                    await SelectRegion(msg);
                 }
                 else if (msg.Text == "/commands")
                 {
-                    IntroduceCommands(msg);
+                    await IntroduceCommands(msg);
                 }
                 else if (msg.Text == "/todaysprays")
                 {
-                    SendTodaysPrays(msg);
+                    await SendTodaysPrays(msg);
                 }
                 else if (msg.Text=="/botinfo")
                 {
-                    SendBotInfo(msg);
+                    await SendBotInfo(msg);
                 }
                 else if (msg.Text.Contains(":admin"))
                 {
-                    SendMessageToEveryone(msg);
+                    await SendMessageToEveryone(msg);
                 }
                 else
                 {
-                    DefaultResponse(msg);
+                    await DefaultResponse(msg);
                 }
             }
             catch (Exception ex)
             {
-                SendAlertToAdmin($"OnMessageda xatolik yuzberdi\n\n{ex.Message}\n\n{ex}\n");
+                await SendAlertToAdmin($"OnMessageda xatolik yuzberdi\n\n{ex.Message}\n\n{ex}\n");
             }
         }
 
-        public async void RegisterUser(Message msg)
+        public async Task RegisterUser(Message msg)
         {
             ResponseModel responseModel = await _userService.Create(new CreateUserDTO
             {
@@ -108,7 +108,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
             else if (responseModel.StatusCode == 200)
             {
                 await _bot.SendTextMessageAsync(msg.Chat, "Assalamualeykum xush kelibsiz 🙂😊");
-                ChooseRegion(msg);
+                await ChooseRegion(msg);
             }
             else if (responseModel.StatusCode == 500)
             {
@@ -116,7 +116,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
             }
         }
 
-        public async void ChooseRegion(Message msg)
+        public async Task ChooseRegion(Message msg)
         {
             ReplyKeyboardMarkup replyMarkup = new ReplyKeyboardMarkup(true)
                                                 .AddNewRow("Andijon", "Buxoro", "Farg'ona")
@@ -126,7 +126,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
             await _bot.SendTextMessageAsync(msg.Chat,"Quyda Viloyatingizni tanlang:",replyMarkup: replyMarkup);
         }
 
-        public async void SelectRegion(Message msg)
+        public async Task SelectRegion(Message msg)
         {
             UpdateUserRegionDTO updateUserRegionDTO = new UpdateUserRegionDTO
             {
@@ -173,7 +173,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
             }
         }
 
-        public async void CheckPrayTime()
+        public async Task CheckPrayTime()
         {
             string baseURL = "https://islomapi.uz/api/present/day?region=";
             HttpClient client = new HttpClient();
@@ -194,27 +194,27 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
                 if (bomdod==currentTime.ToString("HH:mm"))
                 {
-                    RemindPrayTime("Bomdod", DefineRegion(regions[i]), bomdod);
+                    await RemindPrayTime("Bomdod", DefineRegion(regions[i]), bomdod);
                 }
                 else if(quyosh == currentTime.ToString("HH:mm"))
                 {
-                    RemindPrayTime("Quyosh", DefineRegion(regions[i]), quyosh);
+                    await RemindPrayTime("Quyosh", DefineRegion(regions[i]), quyosh);
                 }
                 else if (peshin == currentTime.ToString("HH:mm"))
                 {
-                    RemindPrayTime("Peshin", DefineRegion(regions[i]), peshin);
+                    await RemindPrayTime("Peshin", DefineRegion(regions[i]), peshin);
                 }
                 else if (asr == currentTime.ToString("HH:mm"))
                 {
-                    RemindPrayTime("Asr", DefineRegion(regions[i]), asr);
+                    await RemindPrayTime("Asr", DefineRegion(regions[i]), asr);
                 }
                 else if (shom == currentTime.ToString("HH:mm"))
                 {
-                    RemindPrayTime("Shom", DefineRegion(regions[i]), shom);
+                    await RemindPrayTime("Shom", DefineRegion(regions[i]), shom);
                 }
                 else if (hufton == currentTime.ToString("HH:mm"))
                 {
-                    RemindPrayTime("Hufton", DefineRegion(regions[i]), hufton);
+                    await RemindPrayTime("Hufton", DefineRegion(regions[i]), hufton);
                 }
             }
         }
@@ -244,7 +244,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
             }
         }
 
-        public async void RemindPrayTime(string prayName,Region region,string currentTime)
+        public async Task RemindPrayTime(string prayName,Region region,string currentTime)
         {
             IEnumerable<User> users = await _userService.GetUsersByRegion(region);
             string[] encorageToPray = ["namozga shoshiling ish qochib ketmaydi", "“Albatta, namoz mo‘minlarga vaqtida farz qilingandir” (Niso surasi, 103-oyat)", "yashang ishni tashang, namoz vaqti bo'ldi"];
@@ -266,23 +266,23 @@ namespace PrayReminder.Application.Services.BackgroundServices
             }
         }
 
-        public async void IntroduceCommands(Message msg)
+        public async Task IntroduceCommands(Message msg)
         {
             await _bot.SendTextMessageAsync(msg.Chat.Id, "Bot uchun buyruqlar:\n/start - boshlash\n/region - viloyatni o'zgartirish\n/commands - buyruqlar bilan tanishish",replyMarkup:new ReplyKeyboardRemove());
         }
 
-        public async void DefaultResponse(Message msg)
+        public async Task DefaultResponse(Message msg)
         {
             await _bot.SendTextMessageAsync(msg.Chat.Id, "Tushunarsiz buyruq.\n /commands orqali buyruqlar bilan tanishishingiz mumkin!", replyMarkup: new ReplyKeyboardRemove());
         }
 
-        public async void SendBotInfo(Message msg)
+        public async Task SendBotInfo(Message msg)
         {
             int usersCount=await _userService.GetAllUsersCount();
             await _bot.SendTextMessageAsync(msg.Chat.Id, $"Bot egasi @Abu_Programmiy 😁\nFoydalanuvchilar soni: {usersCount}\nislomapi.uz ma'lumotlaridan foydalanilgan.");
         }
 
-        public async void SendMessageToEveryone(Message msg)
+        public async Task SendMessageToEveryone(Message msg)
         {
             IEnumerable<User> users = await _userService.GetAll();
 
@@ -296,7 +296,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
             await _bot.SendTextMessageAsync(msg.Chat.Id, "Barchaga yuborildi ✅");
         }
 
-        public async void SendTodaysPrays(Message msg)
+        public async Task SendTodaysPrays(Message msg)
         {
             string messageToSend;
 
@@ -319,7 +319,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
             await _bot.SendTextMessageAsync(msg.Chat.Id, messageToSend,parseMode:ParseMode.Html);
         }
 
-        public async void SendAlertToAdmin(string alertText)
+        public async Task SendAlertToAdmin(string alertText)
         {
             await _bot.SendTextMessageAsync(1268306946, $"{alertText}\nsana: {DateTime.Now}");
         }
