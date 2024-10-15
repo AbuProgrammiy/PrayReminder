@@ -335,7 +335,14 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
             data = JObject.Parse(prayTimes);
 
-            messageToSend += $"\n\n<b>Viloyat:</b> {region}\n\n<b>Namoz vaqtlari:</b>\nBomdod: {data["times"]["tong_saharlik"]} ⏰\nQuyosh: {data["times"]["quyosh"]} ⏰\nPeshin: {data["times"]["peshin"]} ⏰\nAsr: {data["times"]["asr"]} ⏰\nShom: {data["times"]["shom_iftor"]} ⏰\nHufton: {data["times"]["hufton"]} ⏰";
+            messageToSend += $"\n\n<b>Viloyat:</b> {region}\n\n" +
+                             $"<b>Namoz vaqtlari:</b>\n" +
+                             $"{data["times"]["tong_saharlik"]}  BOMDOD ⏰\n" +
+                             $"{data["times"]["quyosh"]}  QUYOSH ⏰\n" +
+                             $"{data["times"]["peshin"]}  PESHIN ⏰\n" +
+                             $"{data["times"]["asr"]}  ASR ⏰\n" +
+                             $"{data["times"]["shom_iftor"]}  SHOM ⏰\n" +
+                             $"{data["times"]["hufton"]}  HUFTON ⏰";
 
             await _bot.SendTextMessageAsync(msg.Chat.Id, messageToSend,parseMode:ParseMode.Html);
         }

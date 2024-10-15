@@ -5,7 +5,6 @@ using PrayReminder.Domain.Entities.DTOs;
 using PrayReminder.Domain.Entities.Enums;
 using PrayReminder.Domain.Entities.Models;
 using PrayReminder.Domain.Entities.Views;
-using Telegram.Bot.Requests.Abstractions;
 
 namespace PrayReminder.Application.Services.UserServices
 {
@@ -34,8 +33,8 @@ namespace PrayReminder.Application.Services.UserServices
 
                 User user = request.Adapt<User>();
 
-                await _applicationDbContext.Users.AddAsync(user);
-                await _applicationDbContext.SaveChangesAsync();
+                await _applicationDbContext.Users.AddAsync(user,cancellationToken: new CancellationToken());
+                await _applicationDbContext.SaveChangesAsync(new CancellationToken());
 
                 return new ResponseModel
                 {
@@ -73,7 +72,7 @@ namespace PrayReminder.Application.Services.UserServices
 
 
                 _applicationDbContext.Users.Remove(user);
-                await _applicationDbContext.SaveChangesAsync();
+                await _applicationDbContext.SaveChangesAsync(new CancellationToken());
 
                 return new ResponseModel
                 {
@@ -97,7 +96,7 @@ namespace PrayReminder.Application.Services.UserServices
         {
             try
             {
-                return await _applicationDbContext.Users.ToListAsync();
+                return await _applicationDbContext.Users.ToListAsync(new CancellationToken());
             }
             catch(Exception ex)
             {
@@ -109,7 +108,7 @@ namespace PrayReminder.Application.Services.UserServices
         {
             try
             {
-                List<User> users= await _applicationDbContext.Users.ToListAsync();
+                List<User> users= await _applicationDbContext.Users.ToListAsync(new CancellationToken());
                 return users.Count;
             }
             catch (Exception ex)
@@ -156,7 +155,7 @@ namespace PrayReminder.Application.Services.UserServices
         {
             try
             {
-                return await _applicationDbContext.Users.Where(u=>u.Region==region).ToListAsync();
+                return await _applicationDbContext.Users.Where(u=>u.Region==region).ToListAsync(new CancellationToken());
             }
             catch (Exception ex)
             {
@@ -168,7 +167,7 @@ namespace PrayReminder.Application.Services.UserServices
         {
             try
             {
-                User? user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.ChatId == request.ChatId);
+                User? user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.ChatId == request.ChatId,cancellationToken: new CancellationToken());
 
                 if (user == null)
                 {
@@ -182,7 +181,7 @@ namespace PrayReminder.Application.Services.UserServices
 
                 user.Region= request.Region;
 
-                await _applicationDbContext.SaveChangesAsync();
+                await _applicationDbContext.SaveChangesAsync(new CancellationToken());
 
                 return new ResponseModel
                 {

@@ -7,6 +7,6 @@ namespace PrayReminder.Application.Abstractions
     {
         public DbSet<User> Users { get; set; }
 
-        Task<int> SaveChangesAsync();
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }
