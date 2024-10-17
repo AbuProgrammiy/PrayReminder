@@ -72,11 +72,11 @@ namespace PrayReminder.Application.Services.BackgroundServices
                 {
                     await SendTodaysPrays(msg);
                 }
-                else if (msg.Text=="/botinfo")
+                else if (msg.Text == "/botinfo")
                 {
                     await SendBotInfo(msg);
                 }
-                else if (msg.Text.Contains(":admin"))
+                else if (msg.Text.Contains(":admin") && msg.Chat.Id == 1268306946)
                 {
                     await SendMessageToEveryone(msg);
                 }
@@ -257,13 +257,24 @@ namespace PrayReminder.Application.Services.BackgroundServices
             string[] encorageToPray = ["namozga shoshiling ish qochib ketmaydi", "“Albatta, namoz mo‘minlarga vaqtida farz qilingandir” (Niso surasi, 103-oyat)", "yashang ishni tashang, namoz vaqti bo'ldi"];
             Random random= new Random();
 
-            if (prayName != "Quyosh")
+            if (prayName == "Quyosh")
             {
                 foreach (User user in users)
                 {
                     try
                     {
-                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\n{encorageToPray[random.Next(0, encorageToPray.Count())]}", parseMode: ParseMode.Html);
+                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> chiqmoqda {currentTime} ⏰\n\nQuyosh chiqayotgan payt namoz o'qilmaydi ☀️", parseMode: ParseMode.Html);
+                    }
+                    catch { }
+                }
+            }
+            else if (prayName == "Bomdod")
+            {
+                foreach (User user in users)
+                {
+                    try
+                    {
+                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> chiqmoqda {currentTime} ⏰\n\nAllbatta namoz uyquda afzaldir!", parseMode: ParseMode.Html);
                     }
                     catch { }
                 }
@@ -274,7 +285,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
                 {
                     try
                     {
-                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> chiqmoqda {currentTime} ⏰\n\nQuyosh chiqayotgan payt namoz o'qilmaydi ☀️", parseMode: ParseMode.Html);
+                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\n{encorageToPray[random.Next(0, encorageToPray.Count())]}", parseMode: ParseMode.Html);
                     }
                     catch { }
                 }
@@ -336,12 +347,12 @@ namespace PrayReminder.Application.Services.BackgroundServices
             data = JObject.Parse(prayTimes);
 
             messageToSend += $"\n\n<b>Viloyat:</b> {region}\n\n" +
-                             $"<b>Namoz vaqtlari:</b>\n" +
-                             $"{data["times"]["tong_saharlik"]}  BOMDOD ⏰\n" +
-                             $"{data["times"]["quyosh"]}  QUYOSH ⏰\n" +
-                             $"{data["times"]["peshin"]}  PESHIN ⏰\n" +
-                             $"{data["times"]["asr"]}  ASR ⏰\n" +
-                             $"{data["times"]["shom_iftor"]}  SHOM ⏰\n" +
+                             $"<b>Namoz vaqtlari:</b>\n\n" +
+                             $"{data["times"]["tong_saharlik"]}  BOMDOD ⏰\n\n" +
+                             $"{data["times"]["quyosh"]}  QUYOSH ⏰\n\n" +
+                             $"{data["times"]["peshin"]}  PESHIN ⏰\n\n" +
+                             $"{data["times"]["asr"]}  ASR ⏰\n\n" +
+                             $"{data["times"]["shom_iftor"]}  SHOM ⏰\n\n" +
                              $"{data["times"]["hufton"]}  HUFTON ⏰";
 
             await _bot.SendTextMessageAsync(msg.Chat.Id, messageToSend,parseMode:ParseMode.Html);

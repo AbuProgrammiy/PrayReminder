@@ -10,7 +10,7 @@ namespace PrayReminder.Application
         {
 
             services.AddHostedService<MainBackgroundService>();
-            services.AddScoped<IUserService, UserService>();
+            services.AddTransient<IUserService, UserService>();
 
             return services;
         }
