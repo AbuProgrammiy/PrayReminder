@@ -254,7 +254,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
         public async Task RemindPrayTime(string prayName,Region region,string currentTime)
         {
             IEnumerable<User> users = await _userService.GetUsersByRegion(region);
-            string[] encorageToPray = ["namozga shoshiling ish qochib ketmaydi", "“Albatta, namoz mo‘minlarga vaqtida farz qilingandir” (Niso surasi, 103-oyat)", "yashang ishni tashang, namoz vaqti bo'ldi"];
+            string[] encorageToPray = ["namozga shoshiling ish qochib ketmaydi", "“Albatta, namoz mo‘minlarga vaqtida farz qilingandir” (Niso surasi, 103-oyat)", "yashang ishni tashang, namoz vaqti bo'ldi","Bilmaydiganlar jim tursa, kelishmovchiliklar kamaygan bo'lar edi.\n<b>Abu Homid G'azzoliy</b>","Ilm - yod olingani emas, balki foyda berganidir.\n<b>Imomi Shofeiy roximahumullox</b>","Qafasda tug'iladigan qushlar uchishni jinoyat deb biladilar."];
             Random random= new Random();
 
             if (prayName == "Quyosh")
