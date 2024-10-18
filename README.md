@@ -1,1 +1,1 @@
-[PrayReminder_Bot](https://t.me/@PrayReminder_Bot)
+[PrayReminder_Bot](https://t.me/PrayReminder_Bot)
