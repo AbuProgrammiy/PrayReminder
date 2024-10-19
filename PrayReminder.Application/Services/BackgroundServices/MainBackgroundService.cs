@@ -274,7 +274,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
                 {
                     try
                     {
-                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> chiqmoqda {currentTime} ⏰\n\nAllbatta namoz uyquda afzaldir!", parseMode: ParseMode.Html);
+                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\nAllbatta namoz uyquda afzaldir!", parseMode: ParseMode.Html);
                     }
                     catch { }
                 }
@@ -304,7 +304,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
         public async Task SendBotInfo(Message msg)
         {
-            int usersCount=await _userService.GetAllUsersCount();
+            int? usersCount=await _userService.GetAllUsersCount();
             await _bot.SendTextMessageAsync(msg.Chat.Id, $"Bot egasi @Abu_Programmiy 😁\n\nFoydalanuvchilar soni: {usersCount}\n\nFoydalanilgan ma'nbalar:\nislomapi.uz\naladhan.com");
         }
 
