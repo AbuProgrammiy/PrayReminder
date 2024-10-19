@@ -66,5 +66,42 @@ namespace PrayReminder.Application.Services.QuoteServices
                 throw new Exception(ex.Message,ex);
             }
         }
+
+        public async Task<ResponseModel> Delete(Guid id)
+        {
+            try
+            {
+                Quote quote=await _applicationDbContext.Quotes.FirstOrDefaultAsync(q=>q.Id == id);
+
+                if (quote == null)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Response = "Quote not found!"
+                    };
+                }
+
+                _applicationDbContext.Quotes.Remove(quote);
+                await _applicationDbContext.SaveChangesAsync(new CancellationToken());
+
+                return new ResponseModel
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Response = "Quote successfully deleted!"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Response = $"Something went wrong: {ex.Message}"
+                };
+            }
+        }
     }
 }

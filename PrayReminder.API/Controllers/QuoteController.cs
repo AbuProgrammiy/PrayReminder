@@ -29,5 +29,12 @@ namespace PrayReminder.API.Controllers
         {
             return _quoteService.Create(quoteDTO);
         }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public Task<ResponseModel> Delete(Guid id)
+        {
+            return _quoteService.Delete(id);
+        }
     }
 }

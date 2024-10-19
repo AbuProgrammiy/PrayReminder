@@ -8,5 +8,6 @@ namespace PrayReminder.Application.Services.QuoteServices
     {
         public Task<IEnumerable<Quote>> GetAll();
         public Task<ResponseModel> Create(QuoteDTO quoteDTO);
+        public Task<ResponseModel> Delete(Guid id);
     }
 }
