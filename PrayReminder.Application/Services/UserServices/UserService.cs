@@ -17,6 +17,31 @@ namespace PrayReminder.Application.Services.UserServices
             _applicationDbContext = applicationDbContext;
         }
 
+        public async Task<ResponseModel> CreateRange(IEnumerable<User> users)
+        {
+            try
+            {
+                await _applicationDbContext.Users.AddRangeAsync(users);
+                await _applicationDbContext.SaveChangesAsync(new CancellationToken());
+
+                return new ResponseModel
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Response = "Users successfully added!"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Response = $"Something went wrong: {ex.Message}"
+                };
+            }
+        }
+
         public async Task<ResponseModel> Create(CreateUserDTO request)
         {
             try

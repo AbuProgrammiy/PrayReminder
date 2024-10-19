@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
+using PrayReminder.Application.Services.QuoteServices;
 using PrayReminder.Application.Services.UserServices;
 using PrayReminder.Domain.Entities.DTOs;
 using PrayReminder.Domain.Entities.Enums;
+using PrayReminder.Domain.Entities.Models;
 using PrayReminder.Domain.Entities.Views;
+using System.Globalization;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -18,6 +21,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
         private readonly TelegramBotClient _bot;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IUserService _userService;
+        private readonly IQuoteService _quoteService;
         public string[] regions = ["Andijon", "Buxoro", "Farg'ona", "Jizzax", "Namangan", "Navoiy", "Samarqand", "Toshkent"];
 
         public MainBackgroundService(IServiceScopeFactory serviceScopeFactory)
@@ -27,6 +31,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
             _serviceScopeFactory = serviceScopeFactory;
             _userService = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IUserService>();
+            _quoteService = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IQuoteService>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -285,7 +290,9 @@ namespace PrayReminder.Application.Services.BackgroundServices
                 {
                     try
                     {
-                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\n{encorageToPray[random.Next(0, encorageToPray.Count())]}", parseMode: ParseMode.Html);
+                        List<Quote> quotes = (List<Quote>) await _quoteService.GetAll();
+
+                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\n{quotes[random.Next(0,quotes.Count)]}", parseMode: ParseMode.Html);
                     }
                     catch { }
                 }
@@ -332,17 +339,19 @@ namespace PrayReminder.Application.Services.BackgroundServices
         {
             string messageToSend;
 
+            DateTime dateTime=DateTime.Now;
+            CultureInfo cultureInfo = new CultureInfo("uz-UZ");
+
             HttpClient client=new HttpClient();
-            string dateInfo = await client.GetStringAsync("https://api.aladhan.com/v1/gToH/" + DateTime.Now.ToString("dd-MM-yyyy"));
+            string dateInfo = await client.GetStringAsync("https://api.aladhan.com/v1/gToH/" + dateTime.ToString("dd-MM-yyyy"));
 
             string region=await _userService.GetUserRegionByChatId(msg.Chat.Id);
 
             string prayTimes = await client.GetStringAsync($"https://islomapi.uz/api/present/day?region={region}");
 
-
             JObject data=JObject.Parse(dateInfo);
             
-            messageToSend = $"<b>Hijriy sana:</b> {data["data"]["hijri"]["date"]?.ToString()}\n\n<b>Oy</b>: {data["data"]["hijri"]["month"]["en"]} ({data["data"]["hijri"]["month"]["ar"]})\n<b>Hafta kuni:</b> {data["data"]["hijri"]["weekday"]["en"]} ({data["data"]["hijri"]["weekday"]["ar"]})";
+            messageToSend = $"<b>Hijriy sana:</b> {data["data"]["hijri"]["date"]?.ToString()}\n<b>Melodiy sana:</b> {dateTime.ToString("dd-MM-yyyy")}\n\n<b>Hijriy oy</b>: {data["data"]["hijri"]["month"]["en"]} ({data["data"]["hijri"]["month"]["ar"]})\n<b>Melodiy oy:</b> {cultureInfo.DateTimeFormat.GetMonthName(dateTime.Month)}\n\n<b>Hijriy hafta kuni:</b> {data["data"]["hijri"]["weekday"]["en"]} ({data["data"]["hijri"]["weekday"]["ar"]})\n<b>Melodiy hafta kuni:</b> {cultureInfo.DateTimeFormat.GetDayName(dateTime.DayOfWeek)}";
 
             data = JObject.Parse(prayTimes);
 

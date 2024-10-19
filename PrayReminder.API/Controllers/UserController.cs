@@ -28,7 +28,13 @@ namespace PrayReminder.API.Controllers
         {
             return await _userService.Create(user);
         }
-        
+
+        [HttpPost]
+        public async Task<ResponseModel> CreateRange(IEnumerable<User> users)
+        {
+            return await _userService.CreateRange(users);
+        }
+
         [HttpDelete]
         public async Task<ResponseModel> DeleteUserById(Guid userId)
         {
