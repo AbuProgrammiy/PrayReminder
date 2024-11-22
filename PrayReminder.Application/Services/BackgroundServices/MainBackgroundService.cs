@@ -85,6 +85,10 @@ namespace PrayReminder.Application.Services.BackgroundServices
                 {
                     await SendMessageToEveryone(msg);
                 }
+                else if (msg.Text.Contains("iqtibos: "))
+                {
+                    await AddQuotes(msg);
+                }
                 else
                 {
                     await DefaultResponse(msg);
@@ -279,7 +283,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
                 {
                     try
                     {
-                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\nAllbatta namoz uyquda afzaldir!", parseMode: ParseMode.Html);
+                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\nAllbatta namoz uyqudan afzaldir!", parseMode: ParseMode.Html);
                     }
                     catch { }
                 }
@@ -292,7 +296,9 @@ namespace PrayReminder.Application.Services.BackgroundServices
                     {
                         List<Quote> quotes = (List<Quote>) await _quoteService.GetAll();
 
-                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\n{quotes[random.Next(0,quotes.Count)]}", parseMode: ParseMode.Html);
+                        int RndQuote=random.Next(0,quotes.Count);
+
+                        await _bot.SendTextMessageAsync(user.ChatId, $"<b>{prayName}</b> namozi vaqti bo'ldi {currentTime} ⏰\n\n{quotes[RndQuote].Body}\n<b>{quotes[RndQuote].Author}</b>", parseMode: ParseMode.Html);
                     }
                     catch { }
                 }
@@ -370,6 +376,30 @@ namespace PrayReminder.Application.Services.BackgroundServices
         public async Task SendAlertToAdmin(string alertText)
         {
             await _bot.SendTextMessageAsync(1268306946, $"{alertText}\nsana: {DateTime.Now}");
+        }
+
+        public async Task AddQuotes(Message msg)
+        {
+            QuoteDTO quoteDTO = new QuoteDTO
+            {
+                Body = msg.Text.Split("iqtibos: ")[1].Split("\n")[0],
+                Author = msg.Text.Contains("avftor: ") ? msg.Text.Split("avftor: ")[1] : null
+            };
+
+            ResponseModel response = await _quoteService.Create(quoteDTO);
+
+            if (response.StatusCode == 200)
+            {
+                await _bot.SendTextMessageAsync(msg.Chat, "Muvafaqqiyatli qo'shildi ✅");
+            }
+            else if (response.StatusCode == 400)
+            {
+                await _bot.SendTextMessageAsync(msg.Chat, "Ushbu iqtibos oldindan mavjud ⚠️");
+            }
+            else
+            {
+                await _bot.SendTextMessageAsync(msg.Chat, "Nmadur xato ketdi ⚠❌");
+            }
         }
     }
 }
