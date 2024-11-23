@@ -82,9 +82,9 @@ namespace PrayReminder.Application.Services.BackgroundServices
                     await _bot.SendTextMessageAsync(msg.Chat, "Botimizda mummo yuz berdi, iltimos keyinroq aloqaga chiqing 🙂");
                 }
             }
-            catch
+            catch(Exception ex)
             {
-                await _bot.SendTextMessageAsync(msg.Chat, "Nmadir xato ketdi(\nqayta urinig!");
+                await SendAlertToAdmin(ex.Message+ex.InnerException);
             }
         }
 

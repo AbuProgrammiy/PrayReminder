@@ -57,6 +57,7 @@ namespace PrayReminder.Application.Services.UserServices
                 }
 
                 User user = request.Adapt<User>();
+                user.IsBlocked = false;
 
                 await _applicationDbContext.Users.AddAsync(user,cancellationToken: new CancellationToken());
                 await _applicationDbContext.SaveChangesAsync(new CancellationToken());
