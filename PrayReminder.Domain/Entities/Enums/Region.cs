@@ -2,13 +2,18 @@
 {
     public enum Region
     {
+        Toshkent,
         Andijon,
         Buxoro,
-        Fargona,
-        Jizzax,
+        Sirdaryo,
+        Samarqand,
+        Surxandaryo,
         Namangan,
         Navoiy,
-        Samarqand,
-        Toshkent
+        Jizzax,
+        Qashqadaryo,
+        Fargona,
+        Xiva,
+        Qoraqalpogiston
     }
 }

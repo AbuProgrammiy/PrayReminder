@@ -10,7 +10,7 @@ namespace PrayReminder.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
 
-            services.AddHostedService<MainBackgroundService>();
+            services.AddHostedService<MainBackgroundServicePart1>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IQuoteService, QuoteService>();
 

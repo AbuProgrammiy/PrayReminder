@@ -16,13 +16,13 @@ using User = PrayReminder.Domain.Entities.Models.User;
 
 namespace PrayReminder.Application.Services.BackgroundServices
 {
-    public class MainBackgroundService : BackgroundService
+    public partial class MainBackgroundService : BackgroundService
     {
         private readonly TelegramBotClient _bot;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IUserService _userService;
         private readonly IQuoteService _quoteService;
-        public string[] regions = ["Andijon", "Buxoro", "Farg'ona", "Jizzax", "Namangan", "Navoiy", "Samarqand", "Toshkent"];
+        public string[] regions = ["Toshkent","Andijon", "Buxoro", "Sirdaryo", "Samarqand", "Surxandaryo", "Namangan", "Navoiy", "Jizzax", "Qashqadaryo", "Farg'ona", "Xiva", "Qoraqalpog'iston"];
 
         public MainBackgroundService(IServiceScopeFactory serviceScopeFactory)
         {
@@ -53,51 +53,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
         public async Task OnMessage(Message msg, UpdateType type)
         {
-            try
-            {
-                if (msg.Text is null) return;
-
-                if (msg.Text == "/start")
-                {
-                    await RegisterUser(msg);
-                }
-                else if (msg.Text == "/region")
-                {
-                    await ChooseRegion(msg);
-                }
-                else if (regions.Contains(msg.Text))
-                {
-                    await SelectRegion(msg);
-                }
-                else if (msg.Text == "/commands")
-                {
-                    await IntroduceCommands(msg);
-                }
-                else if (msg.Text == "/todaysprays")
-                {
-                    await SendTodaysPrays(msg);
-                }
-                else if (msg.Text == "/botinfo")
-                {
-                    await SendBotInfo(msg);
-                }
-                else if (msg.Text.Contains(":admin") && msg.Chat.Id == 1268306946)
-                {
-                    await SendMessageToEveryone(msg);
-                }
-                else if (msg.Text.Contains("iqtibos: "))
-                {
-                    await AddQuotes(msg);
-                }
-                else
-                {
-                    await DefaultResponse(msg);
-                }
-            }
-            catch (Exception ex)
-            {
-                await SendAlertToAdmin($"OnMessageda xatolik yuzberdi\n\n{ex.Message}\n\n{ex}\n");
-            }
+            await ManageCommands(msg);
         }
 
         public async Task RegisterUser(Message msg)
@@ -134,12 +90,13 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
         public async Task ChooseRegion(Message msg)
         {
-            ReplyKeyboardMarkup replyMarkup = new ReplyKeyboardMarkup(true)
-                                                .AddNewRow("Andijon", "Buxoro", "Farg'ona")
-                                                .AddNewRow("Jizzax", "Namangan", "Navoiy")
-                                                .AddNewRow("Samarqand", "Toshkent");
+            ReplyKeyboardMarkup replyMarkup = new ReplyKeyboardMarkup(true).AddNewRow("Toshkent", "Andijon", "Buxoro")
+                                                                                        .AddNewRow( "Sirdaryo", "Samarqand", "Surxandaryo")
+                                                                                        .AddNewRow( "Namangan", "Navoiy", "Jizzax")
+                                                                                        .AddNewRow( "Qashqadaryo", "Farg'ona", "Xiva")
+                                                                                        .AddNewRow( "Qoraqalpog'iston");
 
-            await _bot.SendTextMessageAsync(msg.Chat,"Quyda Viloyatingizni tanlang:",replyMarkup: replyMarkup);
+            await _bot.SendTextMessageAsync(msg.Chat,"Quyda mintaqangizni tanlang:",replyMarkup: replyMarkup);
         }
 
         public async Task SelectRegion(Message msg)
@@ -151,17 +108,23 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
             switch (msg.Text)
             {
+                case "Toshkent":
+                    updateUserRegionDTO.Region = Region.Toshkent;
+                    break;
                 case "Andijon":
                     updateUserRegionDTO.Region = Region.Andijon;
                     break;
                 case "Buxoro":
                     updateUserRegionDTO.Region = Region.Buxoro;
                     break;
-                case "Farg'ona":
-                    updateUserRegionDTO.Region = Region.Fargona;
+                case "Sirdaryo":
+                    updateUserRegionDTO.Region = Region.Sirdaryo;
                     break;
-                case "Jizzax":
-                    updateUserRegionDTO.Region = Region.Jizzax;
+                case "Samarqand":
+                    updateUserRegionDTO.Region = Region.Samarqand;
+                    break;
+                case "Surxandaryo":
+                    updateUserRegionDTO.Region = Region.Surxandaryo;
                     break;
                 case "Namangan":
                     updateUserRegionDTO.Region = Region.Namangan;
@@ -169,11 +132,20 @@ namespace PrayReminder.Application.Services.BackgroundServices
                 case "Navoiy":
                     updateUserRegionDTO.Region = Region.Navoiy;
                     break;
-                case "Samarqand":
-                    updateUserRegionDTO.Region = Region.Samarqand;
+                case "Jizzax":
+                    updateUserRegionDTO.Region = Region.Jizzax;
                     break;
-                case "Toshkent":
-                    updateUserRegionDTO.Region = Region.Toshkent;
+                case "Qashqadaryo":
+                    updateUserRegionDTO.Region = Region.Qashqadaryo;
+                    break;
+                case "Farg'ona":
+                    updateUserRegionDTO.Region = Region.Fargona;
+                    break;
+                case "Xiva":
+                    updateUserRegionDTO.Region = Region.Xiva;
+                    break;
+                case "Qoraqalpog'iston":
+                    updateUserRegionDTO.Region = Region.Qoraqalpogiston;
                     break;
             }
 
@@ -239,22 +211,32 @@ namespace PrayReminder.Application.Services.BackgroundServices
         {
             switch (regionName)
             {
+                case "Toshkent":
+                    return Region.Toshkent;
                 case "Andijon":
                     return Region.Andijon;
                 case "Buxoro":
                     return Region.Buxoro;
-                case "Farg'ona":
-                    return Region.Fargona;
-                case "Jizzax":
-                    return Region.Jizzax;
+                case "Sirdaryo":
+                    return Region.Sirdaryo;
+                case "Samarqand":
+                    return Region.Samarqand;
+                case "Surxandaryo":
+                    return Region.Surxandaryo;
                 case "Namangan":
                     return Region.Namangan;
                 case "Navoiy":
                     return Region.Navoiy;
-                case "Samarqand":
-                    return Region.Samarqand;
-                case "Toshkent":
-                    return Region.Toshkent;
+                case "Jizzax":
+                    return Region.Jizzax;
+                case "Qashqadaryo":
+                    return Region.Qashqadaryo;
+                case "Farg'ona":
+                    return Region.Fargona;
+                case "Xiva":
+                    return Region.Xiva;
+                case "Qoraqalpog'iston":
+                    return Region.Qoraqalpogiston;
                 default:
                     throw new Exception();
             }
