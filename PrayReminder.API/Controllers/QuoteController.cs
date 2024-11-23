@@ -32,7 +32,7 @@ namespace PrayReminder.API.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        public Task<ResponseModel> Delete(Guid id)
+        public Task<ResponseModel> Delete(int id)
         {
             return _quoteService.Delete(id);
         }

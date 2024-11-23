@@ -80,11 +80,11 @@ namespace PrayReminder.Application.Services.UserServices
             }
         }
 
-        public async Task<ResponseModel> DeleteUserById(Guid userId)
+        public async Task<ResponseModel> DeleteUserById(int id)
         {
             try
             {
-                User? user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                User? user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
 
                 if (user == null)
                 {

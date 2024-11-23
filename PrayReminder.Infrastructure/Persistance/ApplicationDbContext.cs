@@ -23,9 +23,9 @@ namespace PrayReminder.Infrastructure.Persistance
         {
             modelBuilder.Entity<Quote>().HasData
             (
-                new Quote { Id = Guid.NewGuid(), Body = "namozga shoshiling ish qochib ketmaydi" },
-                new Quote { Id = Guid.NewGuid(), Body = "“Albatta, namoz mo‘minlarga vaqtida farz qilingandir” (Niso surasi, 103-oyat)" },
-                new Quote { Id = Guid.NewGuid(), Body = "yashang ishni tashang, namoz vaqti bo'ldi" }
+                new Quote { Id = 1, Body = "namozga shoshiling ish qochib ketmaydi" },
+                new Quote { Id = 2, Body = "“Albatta, namoz mo‘minlarga vaqtida farz qilingandir” (Niso surasi, 103-oyat)" },
+                new Quote { Id = 3, Body = "yashang ishni tashang, namoz vaqti bo'ldi" }
             );
         }
     }

@@ -14,6 +14,6 @@ namespace PrayReminder.Application.Services.UserServices
         public Task<ResponseModel> Create(CreateUserDTO request);
         public Task<ResponseModel> CreateRange(IEnumerable<User> users);
         public Task<ResponseModel> UpdateRegion(UpdateUserRegionDTO request);
-        public Task<ResponseModel> DeleteUserById(Guid userId);
+        public Task<ResponseModel> DeleteUserById(int id);
     }
 }

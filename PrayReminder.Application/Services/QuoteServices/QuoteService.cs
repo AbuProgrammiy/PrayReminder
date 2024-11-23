@@ -67,7 +67,7 @@ namespace PrayReminder.Application.Services.QuoteServices
             }
         }
 
-        public async Task<ResponseModel> Delete(Guid id)
+        public async Task<ResponseModel> Delete(int id)
         {
             try
             {

@@ -36,9 +36,9 @@ namespace PrayReminder.API.Controllers
         }
 
         [HttpDelete]
-        public async Task<ResponseModel> DeleteUserById(Guid userId)
+        public async Task<ResponseModel> DeleteUserById(int id)
         {
-            return await _userService.DeleteUserById(userId);
+            return await _userService.DeleteUserById(id);
         }
     }
 }
