@@ -12,8 +12,8 @@ using PrayReminder.Infrastructure.Persistance;
 namespace PrayReminder.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241019162128_quotes")]
-    partial class quotes
+    [Migration("20241125084917_hello")]
+    partial class hello
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,11 +25,50 @@ namespace PrayReminder.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("PrayReminder.Domain.Entities.Models.PrayTimes", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<TimeOnly>("Asr")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("Bomdod")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("Peshin")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("Quyosh")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("Region")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeOnly>("Shom")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("Xufton")
+                        .HasColumnType("time without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PrayTimes");
+                });
+
             modelBuilder.Entity("PrayReminder.Domain.Entities.Models.Quote", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Author")
                         .HasColumnType("text");
@@ -45,32 +84,37 @@ namespace PrayReminder.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("56d82b24-c0d1-4d40-8e08-a2dfe90294ef"),
+                            Id = 1,
                             Body = "namozga shoshiling ish qochib ketmaydi"
                         },
                         new
                         {
-                            Id = new Guid("bb9c3395-177a-40e8-bae1-f1455b0719c3"),
+                            Id = 2,
                             Body = "“Albatta, namoz mo‘minlarga vaqtida farz qilingandir” (Niso surasi, 103-oyat)"
                         },
                         new
                         {
-                            Id = new Guid("64090c66-858e-4ade-a596-03a36a6985d1"),
+                            Id = 3,
                             Body = "yashang ishni tashang, namoz vaqti bo'ldi"
                         });
                 });
 
             modelBuilder.Entity("PrayReminder.Domain.Entities.Models.User", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<long>("ChatId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsBlocked")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("LastName")
                         .HasColumnType("text");

@@ -13,6 +13,7 @@ namespace PrayReminder.Infrastructure.Persistance
 
         public DbSet<User> Users { get; set; }
         public DbSet<Quote> Quotes { get; set; }
+        public DbSet<PrayTimes> PrayTimes { get; set; }
 
         public Task<int> SaveChangesAsync()
         {
