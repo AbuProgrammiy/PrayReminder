@@ -12,8 +12,8 @@ using PrayReminder.Infrastructure.Persistance;
 namespace PrayReminder.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241125084917_hello")]
-    partial class hello
+    [Migration("20241127003338_first")]
+    partial class first
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

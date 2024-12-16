@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PrayReminder.Application.Services.UserServices;
 using PrayReminder.Domain.Entities.DTOs;
+using PrayReminder.Domain.Entities.Enums;
 using PrayReminder.Domain.Entities.Models;
 using PrayReminder.Domain.Entities.Views;
 
@@ -22,7 +23,20 @@ namespace PrayReminder.API.Controllers
         {
             return await _userService.GetAll();
         }
-        
+
+        [HttpGet]
+        [Route("{region}")]
+        public async Task<IEnumerable<User>> GetUsersByRegion(Region region)
+        {
+            return await _userService.GetUsersByRegion(region);
+        }
+
+        [HttpGet]
+        public async Task<int> GetAllUsersCount()
+        {
+            return await _userService.GetAllUsersCount();
+        }
+
         [HttpPost]
         public async Task<ResponseModel> Create(CreateUserDTO user)
         {
@@ -33,6 +47,12 @@ namespace PrayReminder.API.Controllers
         public async Task<ResponseModel> CreateRange(IEnumerable<User> users)
         {
             return await _userService.CreateRange(users);
+        }
+
+        [HttpPut]
+        public async Task<ResponseModel> Update(User users)
+        {
+            return await _userService.Update(users);
         }
 
         [HttpDelete]

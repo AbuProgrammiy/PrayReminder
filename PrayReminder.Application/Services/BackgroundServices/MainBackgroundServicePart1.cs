@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PrayReminder.Application.Abstractions;
 using PrayReminder.Application.Services.QuoteServices;
@@ -15,9 +16,10 @@ namespace PrayReminder.Application.Services.BackgroundServices
         private readonly IUserService _userService;
         private readonly IQuoteService _quoteService;
         private readonly IApplicationDbContext _applicationDbContext;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         public string[] regions = ["Toshkent","Andijon", "Buxoro", "Sirdaryo", "Samarqand", "Surxandaryo", "Namangan", "Navoiy", "Jizzax", "Qashqadaryo", "Farg'ona", "Xiva", "Qoraqalpog'iston"];
 
-        public MainBackgroundService(IServiceScopeFactory serviceScopeFactory)
+        public MainBackgroundService(IServiceScopeFactory serviceScopeFactory, IWebHostEnvironment webHostEnvironment)
         {
             _bot = new TelegramBotClient("8189457186:AAEOs1V0QPIGdohCJ0kBuZDwXYuqbx1jarY", cancellationToken: new CancellationToken());
             _bot.OnMessage += OnMessage;
@@ -26,6 +28,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
             _userService = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IUserService>();
             _quoteService = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IQuoteService>();
             _applicationDbContext = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IApplicationDbContext>();
+            _webHostEnvironment = webHostEnvironment;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,7 +45,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
                     await SendAlertToAdmin($"CheckPrayTimeda xatolik yuzberdi\n\n{ex.Message}\n\n{ex}\n");
                 }
 
-                await Task.Delay(10000, stoppingToken);
+                await Task.Delay(59990, stoppingToken);
             }
         }
     }

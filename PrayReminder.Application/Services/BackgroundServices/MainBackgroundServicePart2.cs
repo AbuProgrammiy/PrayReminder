@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using PrayReminder.Domain.Entities.DTOs;
+using PrayReminder.Domain.Entities.Models;
 using PrayReminder.Domain.Entities.Views;
 using System.Globalization;
 using Telegram.Bot;
@@ -57,39 +59,32 @@ namespace PrayReminder.Application.Services.BackgroundServices
             }
             catch (Exception ex)
             {
-                await SendAlertToAdmin($"OnMessageda xatolik yuzberdi\n\n{ex.Message}\n\n{ex}\n");
+                await SendAlertToAdmin($"{ex.Message}\n\n{ex}\n");
             }
         }
 
         public async Task RegisterUser(Message msg)
         {
-            try
+            ResponseModel responseModel = await _userService.Create(new CreateUserDTO
             {
-                ResponseModel responseModel = await _userService.Create(new CreateUserDTO
-                {
-                    ChatId = msg.Chat.Id,
-                    UserName = msg.Chat.Username,
-                    FirstName = msg.Chat.FirstName,
-                    LastName = msg.Chat.LastName
-                });
+                ChatId = msg.Chat.Id,
+                UserName = msg.Chat.Username,
+                FirstName = msg.Chat.FirstName,
+                LastName = msg.Chat.LastName
+            });
 
-                if (responseModel.StatusCode == 400)
-                {
-                    await _bot.SendTextMessageAsync(msg.Chat, $"Hurmatli {msg.Chat.FirstName}aka sizni yana bir bor ko'rib turganimdan hursandman 🙂😊\nRegionni o'zgartirish uchun /region yuboring");
-                }
-                else if (responseModel.StatusCode == 200)
-                {
-                    await _bot.SendTextMessageAsync(msg.Chat, "Assalamualeykum xush kelibsiz 🙂😊");
-                    await ChooseRegion(msg);
-                }
-                else if (responseModel.StatusCode == 500)
-                {
-                    await _bot.SendTextMessageAsync(msg.Chat, "Botimizda mummo yuz berdi, iltimos keyinroq aloqaga chiqing 🙂");
-                }
-            }
-            catch (Exception ex)
+            if (responseModel.StatusCode == 400)
             {
-                await SendAlertToAdmin(ex.Message + ex.InnerException);
+                await _bot.SendTextMessageAsync(msg.Chat, $"Hurmatli {msg.Chat.FirstName}aka sizni yana bir bor ko'rib turganimdan hursandman 🙂😊\nRegionni o'zgartirish uchun /region yuboring");
+            }
+            else if (responseModel.StatusCode == 200)
+            {
+                await _bot.SendTextMessageAsync(msg.Chat, "Assalamualeykum xush kelibsiz 🙂😊");
+                await ChooseRegion(msg);
+            }
+            else if (responseModel.StatusCode == 500)
+            {
+                await _bot.SendTextMessageAsync(msg.Chat, "Botimizda mummo yuz berdi, iltimos keyinroq aloqaga chiqing 🙂");
             }
         }
 
@@ -117,7 +112,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
             if (response.IsSuccess)
             {
-                await _bot.SendTextMessageAsync(msg.Chat.Id, "Viloyatingiz muvaffaqiyatli tanlandi.\nEndi har doim namoz vaqti kirganda sizga eslataman. 😊\n Agar viloyatingizni o'zgartirmoqchi bo'lsangiz /region yuboring.", replyMarkup: new ReplyKeyboardRemove());
+                await _bot.SendTextMessageAsync(msg.Chat.Id, "Mintaqangiz muvaffaqiyatli tanlandi.\nEndi har doim namoz vaqti kirganda sizga eslataman. 😊\nAgar viloyatingizni o'zgartirmoqchi bo'lsangiz /region yuboring.", replyMarkup: new ReplyKeyboardRemove());
             }
             else
             {
@@ -137,8 +132,9 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
         public async Task SendBotInfo(Message msg)
         {
-            int? usersCount = await _userService.GetAllUsersCount();
-            await _bot.SendTextMessageAsync(msg.Chat.Id, $"Bot egasi @Abu_Programmiy 😁\n\nFoydalanuvchilar soni: {usersCount}\n\nFoydalanilgan ma'nbalar:\nislomapi.uz\naladhan.com");
+            int activeUsersCount = (await _applicationDbContext.Users.Where(u => u.IsBlocked == false).ToListAsync()).Count;
+            int blockedUsersCount = (await _applicationDbContext.Users.Where(u => u.IsBlocked == true).ToListAsync()).Count;
+            await _bot.SendTextMessageAsync(msg.Chat.Id, $"Bot egasi @Abu_Programmiy 😁\nKanalga obuna bo'lish hozircha tekin: @AbuProgrammiy\n\nAktiv foydalanuvchilar soni: {activeUsersCount}\nBotni bloklagan foydalanuvchilar: {blockedUsersCount}\n\nFoydalanilgan ma'nbalar:\nislom.uz\nislomapi.uz\naladhan.com");
         }
 
         public async Task SendMessageToEveryone(Message msg)
@@ -165,30 +161,30 @@ namespace PrayReminder.Application.Services.BackgroundServices
         {
             string messageToSend;
 
-            DateTime dateTime = DateTime.Now;
+            DateOnly currentDate =DateOnly.FromDateTime(DateTime.Now);
             CultureInfo cultureInfo = new CultureInfo("uz-UZ");
 
             HttpClient client = new HttpClient();
-            string dateInfo = await client.GetStringAsync("https://api.aladhan.com/v1/gToH/" + dateTime.ToString("dd-MM-yyyy"));
-
-            string region = await _userService.GetUserRegionByChatId(msg.Chat.Id);
-
-            string prayTimes = await client.GetStringAsync($"https://islomapi.uz/api/present/day?region={region}");
+            string dateInfo = await client.GetStringAsync("https://api.aladhan.com/v1/gToH/" + currentDate.ToString("dd-MM-yyyy"));
 
             JObject data = JObject.Parse(dateInfo);
 
-            messageToSend = $"<b>Hijriy sana:</b> {data["data"]["hijri"]["date"]?.ToString()}\n<b>Melodiy sana:</b> {dateTime.ToString("dd-MM-yyyy")}\n\n<b>Hijriy oy</b>: {data["data"]["hijri"]["month"]["en"]} ({data["data"]["hijri"]["month"]["ar"]})\n<b>Melodiy oy:</b> {cultureInfo.DateTimeFormat.GetMonthName(dateTime.Month)}\n\n<b>Hijriy hafta kuni:</b> {data["data"]["hijri"]["weekday"]["en"]} ({data["data"]["hijri"]["weekday"]["ar"]})\n<b>Melodiy hafta kuni:</b> {cultureInfo.DateTimeFormat.GetDayName(dateTime.DayOfWeek)}";
+            messageToSend = $"<b>Hijriy sana:</b> {data["data"]["hijri"]["date"]?.ToString()}\n<b>Melodiy sana:</b> {currentDate.ToString("dd-MM-yyyy")}\n\n<b>Hijriy oy</b>: {data["data"]["hijri"]["month"]["en"]} ({data["data"]["hijri"]["month"]["ar"]})\n<b>Melodiy oy:</b> {cultureInfo.DateTimeFormat.GetMonthName(currentDate.Month)}\n\n<b>Hijriy hafta kuni:</b> {data["data"]["hijri"]["weekday"]["en"]} ({data["data"]["hijri"]["weekday"]["ar"]})\n<b>Melodiy hafta kuni:</b> {cultureInfo.DateTimeFormat.GetDayName(currentDate.DayOfWeek)}";
 
-            data = JObject.Parse(prayTimes);
+            User user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.ChatId == msg.Chat.Id);
 
-            messageToSend += $"\n\n<b>Viloyat:</b> {region}\n\n" +
+            PrayTimes prayTimes=await _applicationDbContext.PrayTimes.FirstOrDefaultAsync(p=>p.Date==currentDate&&p.Region==user.Region);
+
+            messageToSend += $"\n\n" +
                              $"<b>Namoz vaqtlari:</b>\n\n" +
-                             $"{data["times"]["tong_saharlik"]}  BOMDOD ⏰\n\n" +
-                             $"{data["times"]["quyosh"]}  QUYOSH ⏰\n\n" +
-                             $"{data["times"]["peshin"]}  PESHIN ⏰\n\n" +
-                             $"{data["times"]["asr"]}  ASR ⏰\n\n" +
-                             $"{data["times"]["shom_iftor"]}  SHOM ⏰\n\n" +
-                             $"{data["times"]["hufton"]}  HUFTON ⏰";
+                             $"⏰ {prayTimes.Bomdod.ToString("HH:mm")}  <b>BOMDOD</b>\n\n" +
+                             $"⏰ {prayTimes.Quyosh.ToString("HH:mm")}  <b>QUYOSH</b>\n\n" +
+                             $"⏰ {prayTimes.Peshin.ToString("HH:mm")}  <b>PESHIN</b>\n\n" +
+                             $"⏰ {prayTimes.Asr.ToString("HH:mm")}  <b>ASR</b>\n\n" +
+                             $"⏰ {prayTimes.Shom.ToString("HH:mm")}  <b>SHOM</b>\n\n" +
+                             $"⏰ {prayTimes.Xufton.ToString("HH:mm")}  <b>HUFTON</b>";
+
+            messageToSend += $"\n\nMintaqa: <b>{user.Region}</b>";
 
             await _bot.SendTextMessageAsync(msg.Chat.Id, messageToSend, parseMode: ParseMode.Html);
         }
@@ -197,7 +193,7 @@ namespace PrayReminder.Application.Services.BackgroundServices
 
         public async Task AddQuotes(Message msg)
         {
-            QuoteDTO quoteDTO = new QuoteDTO
+            CreateQuoteDTO quoteDTO = new CreateQuoteDTO
             {
                 Body = msg.Text.Split("iqtibos: ")[1].Split("\n")[0],
                 Author = msg.Text.Contains("avftor: ") ? msg.Text.Split("avftor: ")[1] : null

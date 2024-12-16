@@ -16,7 +16,34 @@ namespace PrayReminder.Application.Services.QuoteServices
             _applicationDbContext = applicationDbContext;
         }
 
-        public async Task<ResponseModel> Create(QuoteDTO quoteDTO)
+        public async Task<ResponseModel> CreateRange(IEnumerable<CreateQuoteDTO> createQuoteDTOs)
+        {
+            try
+            {
+                IEnumerable<Quote> quotes = createQuoteDTOs.Adapt<IEnumerable<Quote>>();
+
+                await _applicationDbContext.Quotes.AddRangeAsync(quotes);
+                await _applicationDbContext.SaveChangesAsync(new CancellationToken());
+
+                return new ResponseModel
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Response = "Quotes succesfully created!"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Response = $"Something went wrong: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ResponseModel> Create(CreateQuoteDTO quoteDTO)
         {
             try
             {

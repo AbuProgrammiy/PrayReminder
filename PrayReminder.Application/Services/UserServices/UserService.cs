@@ -46,8 +46,18 @@ namespace PrayReminder.Application.Services.UserServices
         {
             try
             {
-                if (await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.ChatId == request.ChatId) != null)
+                User user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.ChatId == request.ChatId);
+
+                if (user != null)
                 {
+                    user.UserName = request.UserName != null ? request.UserName : user.UserName;
+                    user.FirstName = request.FirstName != null ? request.FirstName : user.FirstName;
+                    user.LastName = request.LastName != null ? request.LastName : user.LastName;
+                    user.IsBlocked = false;
+
+                    _applicationDbContext.Users.Update(user);
+                    await _applicationDbContext.SaveChangesAsync(new CancellationToken());
+
                     return new ResponseModel
                     {
                         IsSuccess = false,
@@ -56,7 +66,7 @@ namespace PrayReminder.Application.Services.UserServices
                     };
                 }
 
-                User user = request.Adapt<User>();
+                user = request.Adapt<User>();
                 user.IsBlocked = false;
 
                 await _applicationDbContext.Users.AddAsync(user,cancellationToken: new CancellationToken());
@@ -214,6 +224,49 @@ namespace PrayReminder.Application.Services.UserServices
                     IsSuccess = true,
                     StatusCode = 200,
                     Response = "Updated successfuly!"
+                };
+            }
+            catch(Exception ex)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Response = $"Something went wrong: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ResponseModel> Update(User userDTO)
+        {
+            try
+            {
+                User user = await _applicationDbContext.Users.FirstOrDefaultAsync(u => u.Id == userDTO.Id);
+
+                if (user == null)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Response = $"User not found to update!"
+                    };
+                }
+
+                user.FirstName = userDTO.FirstName;
+                user.LastName = userDTO.LastName;
+                user.UserName = userDTO.UserName;
+                user.ChatId = userDTO.ChatId;
+                user.Region = userDTO.Region;
+                user.IsBlocked = userDTO.IsBlocked;
+
+                await _applicationDbContext.SaveChangesAsync(new CancellationToken());
+
+                return new ResponseModel
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Response = "User successfully updated!"
                 };
             }
             catch(Exception ex)

@@ -25,7 +25,13 @@ namespace PrayReminder.API.Controllers
         }
 
         [HttpPost]
-        public Task<ResponseModel> Create(QuoteDTO quoteDTO)
+        public Task<ResponseModel> CreateRange(IEnumerable<CreateQuoteDTO> createQuoteDTOs)
+        {
+            return _quoteService.CreateRange(createQuoteDTOs);
+        }
+
+        [HttpPost]
+        public Task<ResponseModel> Create(CreateQuoteDTO quoteDTO)
         {
             return _quoteService.Create(quoteDTO);
         }

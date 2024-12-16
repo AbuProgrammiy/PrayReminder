@@ -13,6 +13,7 @@ namespace PrayReminder.Application.Services.UserServices
         public Task<string> GetUserRegionByChatId(long chatId);
         public Task<ResponseModel> Create(CreateUserDTO request);
         public Task<ResponseModel> CreateRange(IEnumerable<User> users);
+        public Task<ResponseModel> Update(User userDTO);
         public Task<ResponseModel> UpdateRegion(UpdateUserRegionDTO request);
         public Task<ResponseModel> DeleteUserById(int id);
     }
