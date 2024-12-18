@@ -35,7 +35,19 @@ namespace PrayReminder.Application.Services.PrayTimesServices
                     };
                 }
 
-                Region region = (Region)DefineRegion(regionName);
+                object definedRegion = DefineRegion(regionName);
+
+                if (definedRegion == null)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = true,
+                        StatusCode = 400,
+                        Response = "Region is not defined!"
+                    };
+                }
+
+                Region region = (Region)definedRegion;
 
                 PrayTimesView prayTimes = (await _applicationDbContext.PrayTimes.FirstOrDefaultAsync(p => p.Region == region && p.Date == dateOnly)).Adapt<PrayTimesView>(); ;
 
@@ -77,7 +89,19 @@ namespace PrayReminder.Application.Services.PrayTimesServices
                     };
                 }
 
-                Region region = (Region)DefineRegion(regionName);
+                object definedRegion = DefineRegion(regionName);
+
+                if (definedRegion == null)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = true,
+                        StatusCode = 400,
+                        Response = "Region is not defined!"
+                    };
+                }
+
+                Region region = (Region)definedRegion;
 
                 IEnumerable<PrayTimesView> prayTimes = (await _applicationDbContext.PrayTimes.Where(p => p.Region == region && p.Date.Year == dateOnly.Year && p.Date.Month == dateOnly.Month).ToListAsync()).Adapt<IEnumerable<PrayTimesView>>();
 
@@ -130,7 +154,7 @@ namespace PrayReminder.Application.Services.PrayTimesServices
                 case "Qoraqalpog'iston":
                     return Region.Qoraqalpogiston;
                 default:
-                    return -1;
+                    return null;
             }
         }
     }
