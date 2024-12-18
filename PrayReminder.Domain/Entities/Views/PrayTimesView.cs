@@ -4,7 +4,6 @@ namespace PrayReminder.Domain.Entities.Views
 {
     public class PrayTimesView
     {
-        public int Id { get; set; }
         public TimeOnly Bomdod { get; set; }
         public TimeOnly Quyosh { get; set; }
         public TimeOnly Peshin { get; set; }
