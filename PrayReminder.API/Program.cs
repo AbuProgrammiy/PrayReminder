@@ -14,11 +14,22 @@ namespace PrayReminder.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddApplication();
 
             var app = builder.Build();
             
+            app.UseCors();
             app.UseSwagger();
             app.UseSwaggerUI();
 
